@@ -7,6 +7,15 @@ body {
     margin-bottom: 8px;
 }
 
+#main-fab md-fab-trigger button {
+    animation: slide 400ms ease;
+}
+
+@keyframes slide {
+    from {opacity: 0}
+    to {opacity: 1}
+}
+
 #main-fab {
     position: fixed;
     right: 90px;
@@ -299,7 +308,7 @@ button.red {
 }
 
 .platform-icon.appletv {
-    background-position: -24px -249px;
+    background-position: -24px -248px;
 }
 
 .platform-icon.androidtv {
@@ -315,7 +324,7 @@ button.red {
 }
 
 .platform-icon.ios, .platform-icon.IOS, .platform-icon.iOS {
-    background-position: -1px -249px;
+    background-position: -1px -248px;
 }
 
 .platform-icon.unknown {

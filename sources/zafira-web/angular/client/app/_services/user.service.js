@@ -9,6 +9,7 @@
         var service = {};
 
         service.getUserProfile = getUserProfile;
+        service.getExtendedUserProfile = getExtendedUserProfile;
         service.searchUsers = searchUsers;
         service.searchUsersWithQuery = searchUsersWithQuery;
         service.updateUserProfile = updateUserProfile;
@@ -20,12 +21,17 @@
         service.deleteUserFromGroup = deleteUserFromGroup;
         service.getDefaultPreferences = getDefaultPreferences;
         service.updateUserPreferences = updateUserPreferences;
+        service.resetUserPreferencesToDefault = resetUserPreferencesToDefault;
         service.deleteUserPreferences = deleteUserPreferences;
 
         return service;
 
         function getUserProfile() {
         	return $http.get(API_URL + '/api/users/profile').then(UtilService.handleSuccess, UtilService.handleError('Unable to get user profile'));
+        }
+
+        function getExtendedUserProfile() {
+            return $http.get(API_URL + '/api/users/profile/extended').then(UtilService.handleSuccess, UtilService.handleError('Unable to get extended user profile'));
         }
 
         function searchUsers(criteria) {
@@ -70,6 +76,10 @@
 
         function updateUserPreferences(userId, preferences) {
             return $http.put(API_URL + '/api/users/' + userId + '/preferences', preferences).then(UtilService.handleSuccess, UtilService.handleError('Unable to update user preferences'));
+        }
+
+        function resetUserPreferencesToDefault() {
+            return $http.put(API_URL + '/api/users/preferences/default').then(UtilService.handleSuccess, UtilService.handleError('Unable to reset user preferences to default'));
         }
 
         function deleteUserPreferences(userId) {

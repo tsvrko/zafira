@@ -50,6 +50,9 @@ public class UserService
 	
 	@Autowired
 	private UserMapper userMapper;
+
+	@Autowired
+	private UserPreferenceService userPreferenceService;
 	
 	@Autowired
 	private GroupService groupService;
@@ -77,6 +80,7 @@ public class UserService
 						addUserToGroup(user, group.getId());
 						user.getGroups().add(group);
 					}
+					userPreferenceService.createDefaultUserPreferences(user.getId());
 				}
 			}
 		}
@@ -141,13 +145,13 @@ public class UserService
 	@Transactional(rollbackFor = Exception.class)
 	public User createOrUpdateUser(User newUser) throws ServiceException
 	{
-		if (!StringUtils.isEmpty(newUser.getPassword()))
-		{
-			newUser.setPassword(passwordEncryptor.encryptPassword(newUser.getPassword()));
-		}
 		User user = getUserByUsername(newUser.getUsername());
 		if (user == null)
 		{
+			if (!StringUtils.isEmpty(newUser.getPassword()))
+			{
+				newUser.setPassword(passwordEncryptor.encryptPassword(newUser.getPassword()));
+			}
 			createUser(newUser);
 			Group group = groupService.getPrimaryGroupByRole(Role.ROLE_USER);
 			if(group != null)
@@ -155,7 +159,7 @@ public class UserService
 				addUserToGroup(newUser, group.getId());
 				newUser.getGroups().add(group);
 			}
-			
+			userPreferenceService.createDefaultUserPreferences(newUser.getId());
 		} else
 		{
 			newUser.setId(user.getId());

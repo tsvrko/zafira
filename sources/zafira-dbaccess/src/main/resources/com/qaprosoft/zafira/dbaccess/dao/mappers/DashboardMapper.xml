@@ -82,6 +82,15 @@
 			ORDER BY D.POSITION ASC;
 		]]>
     </select>
+
+    <select id="getDefaultDashboardByUserId" resultMap="DashboardResultMap">
+        <include refid="getDashboard" />
+        <![CDATA[
+            WHERE
+                D.TITLE = (SELECT UP.VALUE FROM zafira.USER_PREFERENCES UP WHERE UP.NAME = 'DEFAULT_DASHBOARD'
+                      AND UP.USER_ID = #{userId})
+		]]>
+    </select>
 	
 	<update id="updateDashboard">
 		<![CDATA[

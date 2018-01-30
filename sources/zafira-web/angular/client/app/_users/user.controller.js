@@ -44,6 +44,7 @@
                 .then(function (rs) {
                     if (rs.success) {
                         $scope.user = rs.data;
+                        alertify.success("User profile updated");
                     }
                     else {
                         alertify.error(rs.message);
@@ -80,35 +81,28 @@
         };
 
         $scope.loadDashboards = function () {
-
-            if ($scope.hasHiddenDashboardsPermission() === true) {
-                DashboardService.GetDashboards().then(function (rs) {
-                    if (rs.success) {
-                        $scope.dashboards = rs.data;
-                    }
-                });
-            }
-            else {
-                var hidden = true;
-                DashboardService.GetDashboards(hidden).then(function (rs) {
-                    if (rs.success) {
-                        $scope.dashboards = rs.data;
-                    }
-                });
-            }
+            DashboardService.GetDashboards($scope.hasHiddenDashboardsPermission()).then(function (rs) {
+                if (rs.success) {
+                    $scope.dashboards = rs.data;
+                }
+            });
         };
 
         $scope.updateUserPassword = function (changePassword) {
-            UserService.updateUserPassword(changePassword)
-                .then(function (rs) {
-                    if (rs.success) {
-                        $scope.changePassword = {};
-                        alertify.success("Password changed");
-                    }
-                    else {
-                        alertify.error(rs.message);
-                    }
-                });
+            if (changePassword.password.length < 5 || changePassword.confirmPassword.length < 5){
+                alertify.warning("Password length must be more than 5 characters");
+            } else {
+                UserService.updateUserPassword(changePassword)
+                    .then(function (rs) {
+                        if (rs.success) {
+                            $scope.changePassword = {};
+                            alertify.success("Password changed");
+                        }
+                        else {
+                            alertify.error(rs.message);
+                        }
+                    });
+            }
         };
 
         $scope.getUserProfile = function () {
@@ -158,7 +152,8 @@
             UserService.updateUserPreferences($scope.user.id, preferences).then(function (rs) {
                 if (rs.success) {
                     $scope.preferences = rs.data;
-                    $rootScope.$broadcast('event:preferencesReset');
+                    //$rootScope.$broadcast('event:preferencesReset');
+                    $rootScope.setDefaultPreferences(rs.data && rs.data.length ? rs.data : $rootScope.currentUser.preferences);
                     alertify.success('User preferences are successfully updated');
                 }
                 else {
@@ -168,9 +163,9 @@
         };
 
         $scope.resetPreferences = function () {
-            UserService.deleteUserPreferences($scope.user.id).then(function (rs) {
+            UserService.resetUserPreferencesToDefault().then(function (rs) {
                 if (rs.success) {
-                    $rootScope.$broadcast('event:preferencesReset');
+                    $rootScope.setDefaultPreferences(rs.data);
                     alertify.success('Preferences are set to default');
                 }
                 else {
@@ -179,18 +174,12 @@
             });
         };
 
-        $scope.widgetRefreshIntervals = [0, 30000, 60000, 120000, 300000];
-
         $scope.selectDashboard = function (dashboard) {
-            if ($rootScope.defaultDashboard === dashboard.title) {
-                return true;
-            }
+            return $rootScope.currentUser.defaultDashboard === dashboard.title;
         };
 
         $scope.selectInterval = function (interval) {
-            if ($rootScope.refreshInterval == interval) {
-                return true;
-            }
+            return $rootScope.currentUser.refreshInterval == interval;
         };
 
         $scope.convertMillis = function (millis) {
@@ -258,8 +247,11 @@
         }
 
         (function initController() {
-            $scope.loadDashboards();
-            $scope.getUserProfile();
+            $rootScope.$on('event:defaultPreferencesInitialized', function () {
+                $scope.widgetRefreshIntervals = [0, 30000, 60000, 120000, 300000];
+                $scope.loadDashboards();
+                $scope.getUserProfile();
+            });
         })();
 
     }
